@@ -32,7 +32,6 @@ app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
 app.config['JSON_AS_ASCII'] = False
 
 db = SQLAlchemy(app)
-ma = Marshmallow(app)
 
 
 class Article(db.Model):                                # класс для сохранения записей (база данных)
@@ -44,15 +43,6 @@ class Article(db.Model):                                # класс для со
 
     def __repr__(self):
         return '<Article %r>' % self.id
-
-
-class Schema(ma.Schema):
-    class Meta:
-        fields = ('id', 'title', 'intro', 'text', 'date')
-
-
-recept_schema = Schema(many=False)
-allrecepts_schema = Schema(many=True)
 
 
 
@@ -169,12 +159,12 @@ def single_recept(id):
     recept = None
     if request.method == "GET":
         cursor.execute("SELECT * FROM Article WHERE id=?", (id,))
-        recepte = [
+        recept = [
             dict(id=row[0], Название=row[1], Описание=row[3], Дата=row[4])
             for row in cursor.fetchall()
         ]
-        if recepte is not None:
-            return jsonify(recepte)
+        if recept is not None:
+            return jsonify(recept)
 
 
 
