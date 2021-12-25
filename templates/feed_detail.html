@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ article.title }}
+{% endblock %}
+
+{% block body %}
+
+<p style="margin-bottom: 75px;"></p>
+<div class="container mt-5">
+  <h1>{{ article.title }}</h1>
+  <div class="h-100 p-5 bg-light border rounded-3">
+    <p>{{ article.text }}</p>
+    <p><b>Дата: {{ article.date.date() }}</b></p>
+    {% if current_user.has_role('admin') %}
+    <a href="/feed/{{ article.id }}/edit" class="btn btn-warning">Редактировать</a>
+    {% endif %}
+    {% if current_user.has_role('admin') %}
+    <a href="/feed/{{ article.id }}/del" class="btn btn-danger">Удалить рецепт</a>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+

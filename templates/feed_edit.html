@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Редактирование рецепта
+{% endblock %}
+
+{% block body %}
+<p style="margin-bottom: 65px;"></p>
+<div class="container mt-5">
+    <h1>Редактирование рецепта</h1>
+    <p style="margin-bottom: 20px;"></p>
+    <form method="post">
+        <input type="text" name="title" id="title" class="form-control" value="{{ article.title }}" placeholder="Введите название рецепта"><br>
+        <textarea name="intro" id="intro" class="form-control" placeholder="Введите краткое описание рецепта">{{ article.intro }}</textarea><br>
+        <textarea name="text" id="text" class="form-control" placeholder="Введите подробное описание рецепта">{{ article.text }}</textarea><br>
+        <input type="submit" class="btn btn-success" value="Отредактировать">
+    </form>
+</div>
+{% endblock %}
