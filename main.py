@@ -18,17 +18,18 @@ from flask_security import current_user
 from flask_swagger_ui import get_swaggerui_blueprint
 from marshmallow import Schema, fields
 from flask_marshmallow import Marshmallow
-
-
-from flask_restful import Api, Resource
+from flask_restful import reqparse, Api, Resource, abort
 
 
 app = Flask(__name__)
+api = Api(app)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqlbase.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'Qwerty123'
 app.config['SECURITY_PASSWORD_SALT'] = 'salt'
 app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
+app.config['JSON_AS_ASCII'] = False
 
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
@@ -56,7 +57,7 @@ allrecepts_schema = Schema(many=True)
 
 
 
-
+#--------------------------------------------------------------------
 
 
 
@@ -100,7 +101,7 @@ class HomeAdminView(AdminMixin, AdminIndexView):
 admin = Admin(app, 'Return', url='/', index_view=HomeAdminView(name='Home'))
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
-admin.add_view(AdminView(Article, db.session))          # добавим таблицу с рецептами, редактированием и удалением
+admin.add_view(AdminView(Article, db.session))
 admin.add_view(AdminView(User, db.session))
 admin.add_view(AdminView(Role, db.session))
 
@@ -108,7 +109,7 @@ admin.add_view(AdminView(Role, db.session))
 
 
 
-
+#--------------------------------------------------------------------
 
 
 
@@ -135,11 +136,59 @@ app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 
 
 
+#--------------------------------------------------------------------
+
+
+def db_connection():
+    conn = None
+    try:
+        conn = sqlite3.connect("sqlbase.db")
+    except sqlite3.error as e:
+        print(e)
+    return conn
+
+
+@app.route('/recept', methods=['GET'])
+def all_recept():
+    conn = db_connection()
+    cursor = conn.cursor()
+    if request.method == 'GET':
+        cursor = conn.execute("SELECT * FROM Article")
+        receptes = [
+            dict(id=row[0], Название=row[1], Описание=row[3], Дата=row[4])
+            for row in cursor.fetchall()
+        ]
+        if receptes is not None:
+            return jsonify(receptes)
+
+
+@app.route("/recept/<int:id>", methods=["GET"])
+def single_recept(id):
+    conn = db_connection()
+    cursor = conn.cursor()
+    recept = None
+    if request.method == "GET":
+        cursor.execute("SELECT * FROM Article WHERE id=?", (id,))
+        recepte = [
+            dict(id=row[0], Название=row[1], Описание=row[3], Дата=row[4])
+            for row in cursor.fetchall()
+        ]
+        if recepte is not None:
+            return jsonify(recepte)
 
 
 
+        """rows = cursor.fetchall()
+        for r in rows:
+            recept = r
+        if recept is not None:
+            return json.dumps(recept), 200
+        else:
+            return "Something wrong", 404"""
 
 
+
+#--------------------------------------------------------------------
 
 
 
@@ -148,7 +197,6 @@ app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 @app.route('/')
 @app.route('/feed')
 def feed():
-
     q = request.args.get('q')
     if q:
         articles = Article.query.filter(Article.title.contains(q) | Article.intro.contains(q)).all()
