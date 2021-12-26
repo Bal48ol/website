@@ -1,9 +1,9 @@
 import sqlite3
 
 import flask
-
+import flask_security
 from flask import Flask, render_template, url_for, request, redirect, jsonify, json, blueprints, current_app
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy, os
 from datetime import datetime
 from flask_security import UserMixin, RoleMixin
 from flask_admin import Admin
@@ -20,9 +20,11 @@ from marshmallow import Schema, fields
 from flask_marshmallow import Marshmallow
 from flask_restful import reqparse, Api, Resource, abort
 
+from werkzeug.utils import secure_filename
+
 
 app = Flask(__name__)
-api = Api(app)
+
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqlbase.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -30,6 +32,15 @@ app.config['SECRET_KEY'] = 'Qwerty123'
 app.config['SECURITY_PASSWORD_SALT'] = 'salt'
 app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
 app.config['JSON_AS_ASCII'] = False
+
+app.config['IMAGE_UPLOADS'] = '/img/uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 db = SQLAlchemy(app)
 
@@ -192,6 +203,7 @@ def feed():
         articles = Article.query.filter(Article.title.contains(q) | Article.intro.contains(q)).all()
     else:
         articles = Article.query.order_by(Article.date.desc()).all()
+
     return render_template("feed.html", articles=articles)
 
 
@@ -258,9 +270,7 @@ def about():
     return render_template("about.html")
 
 
-@app.route('/login')
-def login():
-    return render_template("login_user.html")
+
 
 
 if __name__ == "__main__":
