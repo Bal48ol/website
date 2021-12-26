@@ -38,6 +38,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -156,7 +157,7 @@ def all_recept():
     if request.method == 'GET':
         cursor = conn.execute("SELECT * FROM Article")
         receptes = [
-            dict(id=row[0], Название=row[1], Описание=row[3], Дата=row[4])
+            dict(id=row[0], title=row[1], text=row[3], date=row[4])
             for row in cursor.fetchall()
         ]
         if receptes is not None:
@@ -171,11 +172,11 @@ def single_recept(id):
     if request.method == "GET":
         cursor.execute("SELECT * FROM Article WHERE id=?", (id,))
         recept = [
-            dict(id=row[0], Название=row[1], Описание=row[3], Дата=row[4])
+            dict(id=row[0], title=row[1], text=row[3], date=row[4])
             for row in cursor.fetchall()
         ]
         if recept is not None:
-            return jsonify(recept)
+            return json.dumps(recept)
 
 
 
