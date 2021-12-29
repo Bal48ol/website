@@ -1,26 +1,25 @@
 import sqlite3
 
 import flask
-import flask_security
-from flask import Flask, render_template, url_for, request, redirect, jsonify, json, blueprints, current_app
-from flask_sqlalchemy import SQLAlchemy, os
+from flask import Flask, render_template, url_for, request, redirect, jsonify, json
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+
+import flask_security
 from flask_security import UserMixin, RoleMixin
 from flask_admin import Admin
 from flask_admin import AdminIndexView
 from flask_admin.contrib.sqla import ModelView
-from sqlalchemy import or_
 from flask_security import SQLAlchemyUserDatastore
 from flask_security import Security
 from flask_security import login_required
 from flask_security import current_user
 
 from flask_swagger_ui import get_swaggerui_blueprint
-from marshmallow import Schema, fields
-from flask_marshmallow import Marshmallow
-from flask_restful import reqparse, Api, Resource, abort
 
-from werkzeug.utils import secure_filename
+import requests
+
+
 
 
 app = Flask(__name__)
@@ -176,9 +175,13 @@ def single_recept(id):
             for row in cursor.fetchall()
         ]
         if recept is not None:
-            return json.dumps(recept)
+            with open('my.json', 'w') as file:
+                return json.dump(*recept, file, ensure_ascii=False)[1:-1].format()
+        else:
+            return "Something wrong", 404
 
-
+        """if recept is not None:
+            return json.dump(*recept)[1:-1].format()"""
 
         """rows = cursor.fetchall()
         for r in rows:
@@ -245,6 +248,19 @@ def feed_edit(id):
         return render_template("feed_edit.html", article=article)
 
 
+def send_telegram(title, intro, text):
+    token = "5016124696:AAHH8YCXjdiCWtyliXzIf73jPDmqGpI450Y"
+    url = "https://api.telegram.org/bot"
+    channel_id = "@VsyakoeVkusnoe"
+    url += token
+    method = url + "/sendMessage"
+    d = title + '\n' + intro + '\n' + text
+    r = requests.post(method, data={
+        "chat_id": channel_id,
+        "text": d
+    })
+
+
 @app.route('/create', methods=['POST', 'GET'])
 @login_required
 def create():
@@ -252,12 +268,13 @@ def create():
         title = request.form['title']
         intro = request.form['intro']
         text = request.form['text']
+        send_telegram(title, intro, text)
 
         article = Article(title=title, intro=intro, text=text)
-
         try:
             db.session.add(article)
             db.session.commit()
+
             return redirect('/feed')
         except:
             return "При добавлении рецепта произошла ошибка"
