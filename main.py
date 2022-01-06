@@ -171,17 +171,22 @@ def single_recept(id):
     if request.method == "GET":
         cursor.execute("SELECT * FROM Article WHERE id=?", (id,))
         recept = [
-            dict(id=row[0], title=row[1], text=row[3], date=row[4])
+            dict(title=row[3], text=row[1])
             for row in cursor.fetchall()
-        ]
+        ][0]
         if recept is not None:
-            with open('my.json', 'w') as file:
-                return json.dump(*recept, file, ensure_ascii=False)[1:-1].format()
+            return json.dumps(recept)
         else:
             return "Something wrong", 404
 
-        """if recept is not None:
-            return json.dump(*recept)[1:-1].format()"""
+        """ if recept is not None:
+            with open('my.json', 'w') as file:
+                return json.dump(*recept, file, ensure_ascii=False, indent=3)[1:-1].format()
+        else:
+            return "Something wrong", 404 """
+
+        """ if recept is not None:
+            return json.dump(*recept)[1:-1].format() """
 
         """rows = cursor.fetchall()
         for r in rows:
@@ -248,7 +253,7 @@ def feed_edit(id):
         return render_template("feed_edit.html", article=article)
 
 
-def send_telegram(title, intro, text):
+""" def send_telegram(title, intro, text):
     token = "5016124696:AAHH8YCXjdiCWtyliXzIf73jPDmqGpI450Y"
     url = "https://api.telegram.org/bot"
     channel_id = "@VsyakoeVkusnoe"
@@ -258,7 +263,7 @@ def send_telegram(title, intro, text):
     r = requests.post(method, data={
         "chat_id": channel_id,
         "text": d
-    })
+    }) """
 
 
 @app.route('/create', methods=['POST', 'GET'])
@@ -268,7 +273,7 @@ def create():
         title = request.form['title']
         intro = request.form['intro']
         text = request.form['text']
-        send_telegram(title, intro, text)
+        # send_telegram(title, intro, text)
 
         article = Article(title=title, intro=intro, text=text)
         try:
@@ -286,9 +291,6 @@ def create():
 @app.route('/about')
 def about():
     return render_template("about.html")
-
-
-
 
 
 if __name__ == "__main__":
