@@ -5,7 +5,6 @@ from flask import Flask, render_template, url_for, request, redirect, jsonify, j
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-import flask_security
 from flask_security import UserMixin, RoleMixin
 from flask_admin import Admin
 from flask_admin import AdminIndexView
@@ -17,13 +16,7 @@ from flask_security import current_user
 
 from flask_swagger_ui import get_swaggerui_blueprint
 
-import requests
-
-
-
-
 app = Flask(__name__)
-
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqlbase.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -32,24 +25,14 @@ app.config['SECURITY_PASSWORD_SALT'] = 'salt'
 app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
 app.config['JSON_AS_ASCII'] = False
 
-app.config['IMAGE_UPLOADS'] = '/img/uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
-
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
 db = SQLAlchemy(app)
 
 
 class Article(db.Model):                                # класс для сохранения записей (база данных)
-    id = db.Column(db.Integer, primary_key=True)        # поле которое получает только числа
-    title = db.Column(db.String(100), nullable=False)   # Оглавление
-    intro = db.Column(db.String(300), nullable=False)   # вступительный текст
-    text = db.Column(db.Text, nullable=False)           # основной текст на 300+ символов
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    intro = db.Column(db.String(300), nullable=False)
+    text = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
@@ -111,9 +94,6 @@ admin.add_view(AdminView(Role, db.session))
 
 
 #--------------------------------------------------------------------
-
-
-
 
 
 @app.route('/static/<path:path>')
@@ -179,24 +159,6 @@ def single_recept(id):
         else:
             return "Something wrong", 404
 
-        """ if recept is not None:
-            with open('my.json', 'w') as file:
-                return json.dump(*recept, file, ensure_ascii=False, indent=3)[1:-1].format()
-        else:
-            return "Something wrong", 404 """
-
-        """ if recept is not None:
-            return json.dump(*recept)[1:-1].format() """
-
-        """rows = cursor.fetchall()
-        for r in rows:
-            recept = r
-        if recept is not None:
-            return json.dumps(recept), 200
-        else:
-            return "Something wrong", 404"""
-
-
 
 #--------------------------------------------------------------------
 
@@ -253,19 +215,6 @@ def feed_edit(id):
         return render_template("feed_edit.html", article=article)
 
 
-""" def send_telegram(title, intro, text):
-    token = "5016124696:AAHH8YCXjdiCWtyliXzIf73jPDmqGpI450Y"
-    url = "https://api.telegram.org/bot"
-    channel_id = "@VsyakoeVkusnoe"
-    url += token
-    method = url + "/sendMessage"
-    d = title + '\n' + intro + '\n' + text
-    r = requests.post(method, data={
-        "chat_id": channel_id,
-        "text": d
-    }) """
-
-
 @app.route('/create', methods=['POST', 'GET'])
 @login_required
 def create():
@@ -273,7 +222,6 @@ def create():
         title = request.form['title']
         intro = request.form['intro']
         text = request.form['text']
-        # send_telegram(title, intro, text)
 
         article = Article(title=title, intro=intro, text=text)
         try:
