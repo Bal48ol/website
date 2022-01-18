@@ -1,10 +1,8 @@
 version: "3.8"
 services:
-  flask app:
-    image: docker-flask-server
+  flask_app:
     build:
-      context: ./
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "5000:5000"
-  telegram:
-    image: telegram-server-new
