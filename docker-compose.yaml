@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  flask app:
+    image: docker-flask-server
+    build:
+      context: ./
+    ports:
+      - "5000:5000"
+  telegram:
+    image: telegram-server-new

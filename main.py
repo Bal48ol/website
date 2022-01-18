@@ -5,6 +5,7 @@ from flask import Flask, render_template, url_for, request, redirect, jsonify, j
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
+import flask_security
 from flask_security import UserMixin, RoleMixin
 from flask_admin import Admin
 from flask_admin import AdminIndexView
@@ -21,8 +22,8 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqlbase.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'Qwerty123'
-app.config['SECURITY_PASSWORD_SALT'] = 'salt'
-app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
+app.config['SECURITY_PASSWORD_SALT'] = 'mEd6CQHzXS6buJFbGKu9Cfm4g'
+app.config['SECURITY_PASSWORD_HASH'] = 'sha512_crypt'
 app.config['JSON_AS_ASCII'] = False
 
 db = SQLAlchemy(app)
@@ -58,6 +59,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(100))
     active = db.Column(db.Boolean())
     roles = db.relationship('Role', secondary=roles_users, backref=db.backref('users', lazy='dynamic'))
+    fs_uniquifier = db.Column(db.String(255), nullable=False)
 
 
 class Role(db.Model, RoleMixin):
@@ -71,7 +73,7 @@ class AdminMixin:
         return current_user.has_role('admin')
 
     def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('login'), 301)
+        return redirect(url_for('security.login'), 301)
 
 
 class AdminView(AdminMixin, ModelView):
