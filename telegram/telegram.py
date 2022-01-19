@@ -29,7 +29,7 @@ while True:
                 for i in range(len(z)):
                     s += z[i]
                     s += "\n"
-                bot.send_message(chat_id, s)
+                bot.send_message(chat_id, s + "\n" + "Подробнее:" + "\n" 'http://127.0.0.1:5000/feed/' + id_key)
                 f = open('telegram/lastkey.txt', 'w')
                 f.write(str(int(id_key) + 1))
                 f.close()

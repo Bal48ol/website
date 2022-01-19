@@ -153,7 +153,7 @@ def single_recept(id):
     if request.method == "GET":
         cursor.execute("SELECT * FROM Article WHERE id=?", (id,))
         recept = [
-            dict(title=row[3], text=row[1])
+            dict(title=row[2], text=row[1])
             for row in cursor.fetchall()
         ][0]
         if recept is not None:
